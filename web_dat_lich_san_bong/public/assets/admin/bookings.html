@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý đặt sân - Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+        }
+
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h3 {
+            font-size: 1.5rem;
+        }
+
+        .sidebar-header h3 i {
+            color: #667eea;
+            margin-right: 10px;
+        }
+
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            padding: 14px 24px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-nav a i {
+            margin-right: 12px;
+            width: 20px;
+        }
+
+        .sidebar-nav a:hover {
+            background: rgba(102, 126, 234, 0.2);
+            border-left-color: #667eea;
+        }
+
+        .sidebar-nav a.active {
+            background: rgba(102, 126, 234, 0.3);
+            border-left-color: #667eea;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 25px;
+        }
+
+        .page-header {
+            background: white;
+            border-radius: 16px;
+            padding: 20px 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .page-header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .page-header h1 i {
+            color: #667eea;
+            margin-right: 10px;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 16px;
+            overflow-x: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 1px solid #eee;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-pending {
+            background: #ed8936;
+            color: white;
+        }
+
+        .badge-confirmed {
+            background: #48bb78;
+            color: white;
+        }
+
+        .badge-cancelled {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+            margin: 0 3px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-futbol"></i> Admin Panel</h3>
+                <p>Quản lý hệ thống</p>
+            </div>
+            <div class="sidebar-nav">
+                <a href="index.html"><i class="fas fa-chart-line"></i> Dashboard</a>
+                <a href="pitches.html"><i class="fas fa-futbol"></i> Quản lý sân</a>
+                <a href="bookings.html" class="active"><i class="fas fa-calendar-alt"></i> Quản lý đặt sân</a>
+                <a href="../../index.html"><i class="fas fa-home"></i> Về trang chủ</a>
+                <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="page-header">
+                <h1><i class="fas fa-calendar-alt"></i> Quản lý đặt sân</h1>
+            </div>
+
+            <div class="table-container" id="bookingsTable">
+                <div class="spinner">Đang tải...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/utils.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        async function updateStatus(id, status) {
+            try {
+                await fetch(`${API_BASE}/bookings/update-status.php?id=${id}&status=${status}`, { method: 'POST' });
+                showNotification(status === 'confirmed' ? 'Đã duyệt đặt sân!' : 'Đã từ chối đặt sân!', 'success');
+                loadBookings();
+            } catch (error) {
+                showNotification('Cập nhật thất bại!', 'error');
+            }
+        }
+
+        async function loadBookings() {
+            const container = document.getElementById('bookingsTable');
+            try {
+                const data = await apiCall('/bookings/list.php');
+                if (data.bookings && data.bookings.length) {
+                    let html = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Người đặt</th>
+                                    <th>Sân</th>
+                                    <th>Ngày</th>
+                                    <th>Giờ</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    data.bookings.forEach(booking => {
+                        let statusClass = '';
+                        let statusText = '';
+                        if (booking.status === 'pending') {
+                            statusClass = 'badge-pending';
+                            statusText = '⏳ Chờ duyệt';
+                        } else if (booking.status === 'confirmed') {
+                            statusClass = 'badge-confirmed';
+                            statusText = '✅ Đã duyệt';
+                        } else {
+                            statusClass = 'badge-cancelled';
+                            statusText = '❌ Đã hủy';
+                        }
+
+                        let actions = '';
+                        if (booking.status === 'pending') {
+                            actions = `
+                                <button class="btn btn-success btn-sm" onclick="updateStatus(${booking.id}, 'confirmed')">
+                                    <i class="fas fa-check"></i> Duyệt
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="updateStatus(${booking.id}, 'cancelled')">
+                                    <i class="fas fa-times"></i> Từ chối
+                                </button>
+                            `;
+                        } else if (booking.status === 'confirmed') {
+                            actions = `<button class="btn btn-danger btn-sm" onclick="updateStatus(${booking.id}, 'cancelled')"><i class="fas fa-times"></i> Hủy</button>`;
+                        } else {
+                            actions = `<span style="color: #999;">-</span>`;
+                        }
+
+                        html += `
+                            <tr>
+                                <td>${booking.id}</td>
+                                <td><strong>${escapeHtml(booking.user_name || 'Người dùng')}</strong></td>
+                                <td>${escapeHtml(booking.pitch_name)}</td>
+                                <td>${formatDate(booking.booking_date)}</td>
+                                <td>${booking.start_time} - ${booking.end_time}</td>
+                                <td><span class="badge ${statusClass}">${statusText}</span></td>
+                                <td>${actions}</td>
+                            </tr>
+                        `;
+                    });
+                    html += `</tbody></table>`;
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<div style="padding: 40px; text-align: center;"><i class="fas fa-calendar-alt" style="font-size: 48px; color: #ccc;"></i><p style="margin-top: 15px;">Chưa có đặt sân nào.</p></div>';
+                }
+            } catch (error) {
+                container.innerHTML = '<div class="alert alert-error">Lỗi tải dữ liệu!</div>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = getCurrentUser();
+            if (!user || user.role !== 'admin') {
+                window.location.href = '../../login.html';
+                return;
+            }
+            loadBookings();
+
+            document.getElementById('logoutBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                logout();
+            });
+        });
+    </script>
+</body>
+</html>

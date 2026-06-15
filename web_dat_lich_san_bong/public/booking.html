@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt sân</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-futbol"></i> Đặt <span>Sân Bóng</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html"><i class="fas fa-home"></i> Trang chủ</a>
+            <a href="pitches.html"><i class="fas fa-list"></i> Sân bóng</a>
+            <a href="my-bookings.html"><i class="fas fa-calendar-alt"></i> Lịch của tôi</a>
+            <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Đăng xuất (<span class="user-name"></span>)</a>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width: 600px;">
+        <div id="pitch-detail"></div>
+        
+        <div class="card">
+            <h3><i class="fas fa-calendar-plus"></i> Thông tin đặt sân</h3>
+            <form id="booking-form">
+                <div class="form-group">
+                    <label><i class="fas fa-calendar-day"></i> Ngày đặt</label>
+                    <input type="date" name="booking_date" id="booking_date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-clock"></i> Giờ bắt đầu</label>
+                    <select name="start_time" id="start_time" class="form-control" required>
+                        <option value="">Chọn giờ</option>
+                        <option value="06:00">06:00</option><option value="07:00">07:00</option>
+                        <option value="08:00">08:00</option><option value="09:00">09:00</option>
+                        <option value="10:00">10:00</option><option value="11:00">11:00</option>
+                        <option value="12:00">12:00</option><option value="13:00">13:00</option>
+                        <option value="14:00">14:00</option><option value="15:00">15:00</option>
+                        <option value="16:00">16:00</option><option value="17:00">17:00</option>
+                        <option value="18:00">18:00</option><option value="19:00">19:00</option>
+                        <option value="20:00">20:00</option><option value="21:00">21:00</option>
+                        <option value="22:00">22:00</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-clock"></i> Giờ kết thúc</label>
+                    <select name="end_time" id="end_time" class="form-control" required>
+                        <option value="">Chọn giờ</option>
+                        <option value="07:00">07:00</option><option value="08:00">08:00</option>
+                        <option value="09:00">09:00</option><option value="10:00">10:00</option>
+                        <option value="11:00">11:00</option><option value="12:00">12:00</option>
+                        <option value="13:00">13:00</option><option value="14:00">14:00</option>
+                        <option value="15:00">15:00</option><option value="16:00">16:00</option>
+                        <option value="17:00">17:00</option><option value="18:00">18:00</option>
+                        <option value="19:00">19:00</option><option value="20:00">20:00</option>
+                        <option value="21:00">21:00</option><option value="22:00">22:00</option>
+                        <option value="23:00">23:00</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-check-circle"></i> Xác nhận đặt sân
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/booking.js"></script>
+</body>
+</html>

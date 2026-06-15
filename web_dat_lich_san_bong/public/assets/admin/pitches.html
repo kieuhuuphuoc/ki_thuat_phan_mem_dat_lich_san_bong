@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý sân - Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+        }
+
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h3 {
+            font-size: 1.5rem;
+        }
+
+        .sidebar-header h3 i {
+            color: #667eea;
+            margin-right: 10px;
+        }
+
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            padding: 14px 24px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-nav a i {
+            margin-right: 12px;
+            width: 20px;
+        }
+
+        .sidebar-nav a:hover {
+            background: rgba(102, 126, 234, 0.2);
+            border-left-color: #667eea;
+        }
+
+        .sidebar-nav a.active {
+            background: rgba(102, 126, 234, 0.3);
+            border-left-color: #667eea;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 25px;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: white;
+            border-radius: 16px;
+            padding: 20px 25px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .page-header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .page-header h1 i {
+            color: #667eea;
+            margin-right: 10px;
+        }
+
+        /* Table */
+        .table-container {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 1px solid #eee;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-content h3 i {
+            color: #667eea;
+            margin-right: 10px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .page-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            table {
+                font-size: 14px;
+            }
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-futbol"></i> Admin Panel</h3>
+                <p>Quản lý hệ thống</p>
+            </div>
+            <div class="sidebar-nav">
+                <a href="index.html"><i class="fas fa-chart-line"></i> Dashboard</a>
+                <a href="pitches.html" class="active"><i class="fas fa-futbol"></i> Quản lý sân</a>
+                <a href="bookings.html"><i class="fas fa-calendar-alt"></i> Quản lý đặt sân</a>
+                <a href="../../index.html"><i class="fas fa-home"></i> Về trang chủ</a>
+                <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="page-header">
+                <h1><i class="fas fa-futbol"></i> Quản lý sân bóng</h1>
+                <button class="btn btn-primary" onclick="showAddModal()">
+                    <i class="fas fa-plus"></i> Thêm sân mới
+                </button>
+            </div>
+
+            <div class="table-container" id="pitchesTable">
+                <div class="spinner">Đang tải...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal thêm sân -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-plus-circle"></i> Thêm sân mới</h3>
+            <form id="addForm">
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Tên sân</label>
+                    <input type="text" id="name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-users"></i> Loại sân</label>
+                    <input type="text" id="type" class="form-control" placeholder="Sân 5 người, 7 người...">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-map-marker-alt"></i> Địa chỉ</label>
+                    <input type="text" id="location" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-dollar-sign"></i> Giá (VNĐ/giờ)</label>
+                    <input type="number" id="price" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-info-circle"></i> Mô tả</label>
+                    <textarea id="description" class="form-control" rows="3"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Lưu</button>
+                    <button type="button" class="btn btn-danger" onclick="closeModal()"><i class="fas fa-times"></i> Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/utils.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        async function loadPitches() {
+            const container = document.getElementById('pitchesTable');
+            try {
+                const data = await apiCall('/pitches/list.php');
+                if (data.pitches && data.pitches.length) {
+                    let html = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tên sân</th>
+                                    <th>Loại</th>
+                                    <th>Địa chỉ</th>
+                                    <th>Giá</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    data.pitches.forEach(pitch => {
+                        html += `
+                            <tr>
+                                <td>${pitch.id}</td>
+                                <td><strong><i class="fas fa-futbol"></i> ${escapeHtml(pitch.name)}</strong></td>
+                                <td>${escapeHtml(pitch.type || '---')}</td>
+                                <td>${escapeHtml(pitch.location || '---')}</td>
+                                <td class="price">${formatCurrency(pitch.price_per_hour)}</td>
+                                <td>
+                                    <button class="btn btn-danger btn-sm" onclick="deletePitch(${pitch.id})">
+                                        <i class="fas fa-trash"></i> Xóa
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    html += `</tbody></table>`;
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<div style="padding: 40px; text-align: center;"><i class="fas fa-futbol" style="font-size: 48px; color: #ccc;"></i><p style="margin-top: 15px;">Chưa có sân nào. Hãy thêm sân mới!</p></div>';
+                }
+            } catch (error) {
+                container.innerHTML = '<div class="alert alert-error">Lỗi tải dữ liệu!</div>';
+            }
+        }
+
+        async function deletePitch(id) {
+            if (!confirm('Bạn có chắc muốn xóa sân này?')) return;
+            try {
+                await apiCall(`/pitches/delete.php?id=${id}`, { method: 'DELETE' });
+                showNotification('Xóa sân thành công!', 'success');
+                loadPitches();
+            } catch (error) {
+                showNotification('Xóa sân thất bại!', 'error');
+            }
+        }
+
+        async function addPitch(event) {
+            event.preventDefault();
+            const data = {
+                name: document.getElementById('name').value,
+                type: document.getElementById('type').value,
+                location: document.getElementById('location').value,
+                price: document.getElementById('price').value,
+                description: document.getElementById('description').value
+            };
+            try {
+                await apiCall('/pitches/create.php', { method: 'POST', body: data });
+                showNotification('Thêm sân thành công!', 'success');
+                closeModal();
+                loadPitches();
+                document.getElementById('addForm').reset();
+            } catch (error) {
+                showNotification('Thêm sân thất bại!', 'error');
+            }
+        }
+
+        function showAddModal() {
+            document.getElementById('addModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('addModal').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = getCurrentUser();
+            if (!user || user.role !== 'admin') {
+                window.location.href = '../../login.html';
+                return;
+            }
+            loadPitches();
+
+            document.getElementById('logoutBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                logout();
+            });
+
+            document.getElementById('addForm').addEventListener('submit', addPitch);
+        });
+
+        window.onclick = function(event) {
+            if (event.target === document.getElementById('addModal')) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

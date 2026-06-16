@@ -1,5 +1,6 @@
 let currentPitchId = null;
 
+// Load danh sách sân
 async function loadPitches() {
     const container = document.getElementById('pitches-container');
     if (!container) return;
@@ -9,21 +10,20 @@ async function loadPitches() {
         const data = await apiCall('/pitches/list.php');
         
         if (data.pitches && data.pitches.length) {
-            container.innerHTML = `
-                <div class="grid">
-                    ${data.pitches.map(pitch => `
-                        <div class="card">
-                            <h3>⚽ ${escapeHtml(pitch.name)}</h3>
-                            <p><strong>🏷️ Loại:</strong> ${escapeHtml(pitch.type || 'Sân bóng đá')}</p>
-                            <p><strong>📍 Địa chỉ:</strong> ${escapeHtml(pitch.location || 'Đang cập nhật')}</p>
-                            <p><strong>💰 Giá:</strong> ${formatCurrency(pitch.price_per_hour)}/giờ</p>
-                            <button class="btn btn-primary" onclick="goToBooking(${pitch.id})">📅 Đặt sân</button>
-                        </div>
-                    `).join('')}
+            container.innerHTML = data.pitches.map(pitch => `
+                <div class="card pitch-card">
+                    <h3><i class="fas fa-futbol"></i> ${escapeHtml(pitch.name)}</h3>
+                    <p><i class="fas fa-tag"></i> <strong>Loại:</strong> ${escapeHtml(pitch.type || 'Sân bóng đá')}</p>
+                    <p><i class="fas fa-map-marker-alt"></i> <strong>Địa chỉ:</strong> ${escapeHtml(pitch.location || 'Đang cập nhật')}</p>
+                    <p><i class="fas fa-dollar-sign"></i> <strong>Giá:</strong> <span class="price">${formatCurrency(pitch.price_per_hour)}</span>/giờ</p>
+                    <p><i class="fas fa-info-circle"></i> ${escapeHtml(pitch.description || 'Sân chất lượng cao, đèn chiếu sáng tốt')}</p>
+                    <button class="btn btn-primary" onclick="goToBooking(${pitch.id})">
+                        <i class="fas fa-calendar-check"></i> Đặt sân
+                    </button>
                 </div>
-            `;
+            `).join('');
         } else {
-            container.innerHTML = '<p>Không có sân nào.</p>';
+            container.innerHTML = '<p class="alert alert-info">Không có sân nào.</p>';
         }
     } catch (error) {
         container.innerHTML = '<p class="alert alert-error">Lỗi tải dữ liệu!</p>';
@@ -34,6 +34,7 @@ function goToBooking(pitchId) {
     window.location.href = `/web_dat_lich_san_bong/public/booking.html?pitch_id=${pitchId}`;
 }
 
+// Load chi tiết sân
 async function loadPitchDetail() {
     const urlParams = new URLSearchParams(window.location.search);
     currentPitchId = urlParams.get('pitch_id');
@@ -51,9 +52,11 @@ async function loadPitchDetail() {
             if (container) {
                 container.innerHTML = `
                     <div class="card">
-                        <h2>⚽ ${escapeHtml(data.pitch.name)}</h2>
-                        <p><strong>💰 Giá:</strong> ${formatCurrency(data.pitch.price_per_hour)}/giờ</p>
-                        <p><strong>📝 Mô tả:</strong> ${escapeHtml(data.pitch.description || 'Sân chất lượng cao')}</p>
+                        <h2><i class="fas fa-futbol"></i> ${escapeHtml(data.pitch.name)}</h2>
+                        <p><i class="fas fa-tag"></i> <strong>Loại:</strong> ${escapeHtml(data.pitch.type || 'Sân bóng đá')}</p>
+                        <p><i class="fas fa-map-marker-alt"></i> <strong>Địa chỉ:</strong> ${escapeHtml(data.pitch.location || 'Đang cập nhật')}</p>
+                        <p><i class="fas fa-dollar-sign"></i> <strong>Giá:</strong> <span class="price">${formatCurrency(data.pitch.price_per_hour)}</span>/giờ</p>
+                        <p><i class="fas fa-info-circle"></i> ${escapeHtml(data.pitch.description || 'Sân chất lượng cao')}</p>
                     </div>
                 `;
             }
@@ -66,6 +69,7 @@ async function loadPitchDetail() {
     }
 }
 
+// Xử lý đặt sân
 async function handleBooking(event) {
     event.preventDefault();
     
@@ -79,8 +83,9 @@ async function handleBooking(event) {
     }
     
     const submitBtn = document.querySelector('#booking-form button');
+    const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Đang xử lý...';
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
     
     try {
         const data = await apiCall('/bookings/create.php', {
@@ -103,10 +108,11 @@ async function handleBooking(event) {
         console.error('Booking error:', error);
     } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Xác nhận đặt sân';
+        submitBtn.innerHTML = originalText;
     }
 }
 
+// Load lịch đã đặt
 async function loadMyBookings() {
     const container = document.getElementById('bookings-container');
     if (!container) return;
@@ -123,41 +129,57 @@ async function loadMyBookings() {
             let html = '';
             
             if (upcoming.length > 0) {
-                html += '<h2>⏰ Sắp diễn ra</h2>';
+                html += '<h2><i class="fas fa-clock"></i> Sắp diễn ra</h2>';
                 html += upcoming.map(booking => `
                     <div class="card">
-                        <h3>⚽ ${escapeHtml(booking.pitch_name)}</h3>
-                        <p><strong>📆 Ngày:</strong> ${formatDate(booking.booking_date)}</p>
-                        <p><strong>⏱️ Giờ:</strong> ${booking.start_time} - ${booking.end_time}</p>
-                        <p><strong>📌 Trạng thái:</strong> 
-                            ${booking.status === 'pending' ? '⏳ Chờ xác nhận' : 
-                              booking.status === 'confirmed' ? '✅ Đã xác nhận' : '❌ Đã hủy'}
+                        <h3><i class="fas fa-futbol"></i> ${escapeHtml(booking.pitch_name)}</h3>
+                        <p><i class="fas fa-calendar-day"></i> <strong>Ngày:</strong> ${formatDate(booking.booking_date)}</p>
+                        <p><i class="fas fa-clock"></i> <strong>Giờ:</strong> ${booking.start_time} - ${booking.end_time}</p>
+                        <p><i class="fas fa-info-circle"></i> <strong>Trạng thái:</strong> 
+                            ${booking.status === 'pending' ? '<span class="badge badge-pending">⏳ Chờ xác nhận</span>' : 
+                              booking.status === 'confirmed' ? '<span class="badge badge-confirmed">✅ Đã xác nhận</span>' : 
+                              '<span class="badge badge-cancelled">❌ Đã hủy</span>'}
                         </p>
-                        <button class="btn btn-danger" onclick="cancelBooking(${booking.id})">❌ Hủy lịch</button>
+                        <button class="btn btn-danger" onclick="cancelBooking(${booking.id})">
+                            <i class="fas fa-trash"></i> Hủy lịch
+                        </button>
                     </div>
                 `).join('');
             }
             
             if (past.length > 0) {
-                html += '<h2>📜 Lịch sử</h2>';
-                html += past.map(booking => `
-                    <div class="card" style="opacity: 0.7;">
-                        <h3>⚽ ${escapeHtml(booking.pitch_name)}</h3>
-                        <p><strong>📆 Ngày:</strong> ${formatDate(booking.booking_date)}</p>
-                        <p><strong>⏱️ Giờ:</strong> ${booking.start_time} - ${booking.end_time}</p>
-                    </div>
-                `).join('');
+                html += '<h2><i class="fas fa-history"></i> Lịch sử</h2>';
+                html += past.map(booking => {
+                    let statusHtml = '';
+                    if (booking.status === 'cancelled') {
+                        statusHtml = '<span class="badge badge-cancelled">❌ Đã hủy</span>';
+                    } else if (booking.booking_date < today) {
+                        statusHtml = '<span class="badge badge-confirmed">✅ Đã diễn ra</span>';
+                    } else {
+                        statusHtml = `<span class="badge badge-pending">⏳ ${booking.status}</span>`;
+                    }
+                    
+                    return `
+                        <div class="card" style="opacity: 0.85;">
+                            <h3><i class="fas fa-futbol"></i> ${escapeHtml(booking.pitch_name)}</h3>
+                            <p><i class="fas fa-calendar-day"></i> <strong>Ngày:</strong> ${formatDate(booking.booking_date)}</p>
+                            <p><i class="fas fa-clock"></i> <strong>Giờ:</strong> ${booking.start_time} - ${booking.end_time}</p>
+                            <p><i class="fas fa-info-circle"></i> <strong>Trạng thái:</strong> ${statusHtml}</p>
+                        </div>
+                    `;
+                }).join('');
             }
             
             container.innerHTML = html;
         } else {
-            container.innerHTML = '<p>Bạn chưa có lịch đặt nào.</p>';
+            container.innerHTML = '<p class="alert alert-info">Bạn chưa có lịch đặt nào.</p>';
         }
     } catch (error) {
         container.innerHTML = '<p class="alert alert-error">Lỗi tải dữ liệu!</p>';
     }
 }
 
+// Hủy booking
 async function cancelBooking(bookingId) {
     if (!confirm('Bạn có chắc muốn hủy lịch đặt sân này?')) return;
     
@@ -175,6 +197,7 @@ async function cancelBooking(bookingId) {
     }
 }
 
+// Khởi tạo
 document.addEventListener('DOMContentLoaded', () => {
     const pathname = window.location.pathname;
     

@@ -12,7 +12,10 @@ async function handleLogin(event) {
         });
         
         if (data.success) {
+            // Lưu user vào sessionStorage
             sessionStorage.setItem('user', JSON.stringify(data.user));
+            console.log('Đã lưu user:', data.user);
+            
             showNotification('Đăng nhập thành công!', 'success');
             
             if (data.user.role === 'admin') {
@@ -57,7 +60,7 @@ async function handleRegister(event) {
     }
 }
 
-// Kiểm tra đăng nhập
+// Kiểm tra đăng nhập khi load trang
 function checkAuth() {
     const user = getCurrentUser();
     const currentPage = window.location.pathname.split('/').pop();
@@ -84,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerForm = document.getElementById('register-form');
     if (registerForm) registerForm.addEventListener('submit', handleRegister);
     
-    // Xử lý nút logout - TÌM THEO ID
+    // Xử lý nút logout
     const logoutBtn = document.getElementById('logout-link');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', (e) => {

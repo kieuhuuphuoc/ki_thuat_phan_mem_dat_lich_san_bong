@@ -31,25 +31,12 @@ async function apiCall(endpoint, options = {}) {
 
 // ============ SHOW NOTIFICATION ============
 function showNotification(message, type = 'info') {
-    // Xóa thông báo cũ nếu có
     const oldNotification = document.querySelector('.custom-notification');
     if (oldNotification) oldNotification.remove();
     
     const notification = document.createElement('div');
     notification.className = `alert alert-${type} custom-notification`;
     notification.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i> ${message}`;
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-        animation: slideIn 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        padding: 12px 20px;
-        border-radius: 8px;
-        background: ${type === 'success' ? '#48bb78' : type === 'error' ? '#f56565' : '#4299e1'};
-        color: white;
-    `;
     
     document.body.appendChild(notification);
     
@@ -91,40 +78,71 @@ function isAuthenticated() {
     return sessionStorage.getItem('user') !== null;
 }
 
-// ============ LOGOUT FUNCTION - SỬA LẠI ============
+// ============ LOGOUT FUNCTION ============
 function logout() {
-    // Xóa user khỏi sessionStorage
     sessionStorage.removeItem('user');
     
-    // Gọi API logout
     fetch(`${API_BASE}/auth/logout.php`, { 
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         }
-    })
-    .then(() => {
-        // Chuyển hướng về trang đăng nhập
-        window.location.href = '/web_dat_lich_san_bong/public/login.html';
-    })
-    .catch(() => {
-        // Nếu lỗi vẫn chuyển hướng
-        window.location.href = '/web_dat_lich_san_bong/public/login.html';
+    }).catch(() => {});
+    
+    window.location.href = '/web_dat_lich_san_bong/public/login.html';
+}
+
+// ============ FILTER PITCHES ============
+function filterPitches() {
+    const searchValue = document.getElementById('searchInput')?.value.toLowerCase() || '';
+    const priceFilter = document.getElementById('priceFilter')?.value || 'all';
+    const cards = document.querySelectorAll('.pitch-card');
+    
+    cards.forEach(card => {
+        const title = card.querySelector('h3')?.textContent.toLowerCase() || '';
+        const priceText = card.querySelector('.price')?.textContent || '';
+        const price = parseInt(priceText.replace(/[^0-9]/g, '')) || 0;
+        
+        let priceMatch = true;
+        if (priceFilter === 'under300') priceMatch = price < 300000;
+        else if (priceFilter === '300-500') priceMatch = price >= 300000 && price <= 500000;
+        else if (priceFilter === 'over500') priceMatch = price > 500000;
+        
+        const searchMatch = title.includes(searchValue);
+        
+        if (searchMatch && priceMatch) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
     });
+}
+
+// ============ LOAD STATS FOR HOME ============
+async function loadHomeStats() {
+    try {
+        const bookings = await apiCall('/bookings/list.php');
+        const today = new Date().toISOString().split('T')[0];
+        const todayBookings = bookings.bookings?.filter(b => b.booking_date === today).length || 0;
+        
+        const todaySpan = document.getElementById('todayBookings');
+        if (todaySpan) todaySpan.textContent = todayBookings;
+    } catch(e) {}
 }
 
 // ============ CSS ANIMATION ============
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 `;
 document.head.appendChild(style);

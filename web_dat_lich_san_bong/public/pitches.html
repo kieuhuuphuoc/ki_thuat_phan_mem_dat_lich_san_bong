@@ -17,31 +17,88 @@
             <a href="pitches.html"><i class="fas fa-list"></i> Sân bóng</a>
             <a href="my-bookings.html" id="my-bookings-link" style="display: none;"><i class="fas fa-calendar-alt"></i> Lịch của tôi</a>
             <a href="booking.html" id="booking-link" style="display: none;"><i class="fas fa-plus-circle"></i> Đặt sân</a>
-            <a href="#" id="logout-link" style="display: none;"><i class="fas fa-sign-out-alt"></i> Đăng xuất (<span class="user-name"></span>)</a>
+            <a href="assets/admin/index.html" id="admin-link" style="display: none;"><i class="fas fa-shield-alt"></i> Admin</a>
+            <a href="#" id="logout-link" style="display: none;">
+                <i class="fas fa-sign-out-alt"></i> Đăng xuất (<span class="user-name"></span>)
+            </a>
             <a href="login.html" id="login-link"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a>
             <a href="register.html" id="register-link"><i class="fas fa-user-plus"></i> Đăng ký</a>
+            <button id="darkModeToggle" class="dark-mode-btn" onclick="toggleDarkMode()">
+                <i class="fas fa-moon"></i>
+            </button>
         </div>
     </nav>
 
     <div class="container">
-        <h1><i class="fas fa-futbol"></i> Danh sách sân bóng</h1>
-        <div id="pitches-container"></div>
+        <h1><i class="fas fa-list"></i> Danh sách sân bóng</h1>
+        
+        <div class="search-filter">
+            <input type="text" id="searchInput" class="form-control" placeholder="🔍 Tìm kiếm sân bóng...">
+            <select id="priceFilter" class="form-control">
+                <option value="all">💰 Tất cả giá</option>
+                <option value="under300">Dưới 300.000đ</option>
+                <option value="300-500">300.000đ - 500.000đ</option>
+                <option value="over500">Trên 500.000đ</option>
+            </select>
+        </div>
+        
+        <div id="pitches-container" class="grid"></div>
     </div>
 
     <script src="assets/js/utils.js"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/booking.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        // Hàm logout
+        function logoutNow() {
+            sessionStorage.removeItem('user');
+            window.location.href = '/web_dat_lich_san_bong/public/login.html';
+        }
+        
+        // Gắn sự kiện logout
+        document.getElementById('logout-link')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            logoutNow();
+        });
+        
+        // Cập nhật giao diện dựa trên user
+        function updateUIForUser() {
             const user = getCurrentUser();
+            
+            const myBookingsLink = document.getElementById('my-bookings-link');
+            const bookingLink = document.getElementById('booking-link');
+            const loginLink = document.getElementById('login-link');
+            const registerLink = document.getElementById('register-link');
+            const logoutLink = document.getElementById('logout-link');
+            const adminLink = document.getElementById('admin-link');
+            const userNameSpan = document.querySelector('.user-name');
+            
             if (user) {
-                document.getElementById('my-bookings-link').style.display = 'inline-block';
-                document.getElementById('booking-link').style.display = 'inline-block';
-                document.getElementById('login-link').style.display = 'none';
-                document.getElementById('register-link').style.display = 'none';
-                document.getElementById('logout-link').style.display = 'inline-block';
-                document.querySelector('.user-name').textContent = user.name;
+                if (myBookingsLink) myBookingsLink.style.display = 'inline-block';
+                if (bookingLink) bookingLink.style.display = 'inline-block';
+                if (loginLink) loginLink.style.display = 'none';
+                if (registerLink) registerLink.style.display = 'none';
+                if (logoutLink) logoutLink.style.display = 'inline-block';
+                if (userNameSpan) userNameSpan.textContent = user.name;
+                if (user.role === 'admin' && adminLink) adminLink.style.display = 'inline-block';
+            } else {
+                if (myBookingsLink) myBookingsLink.style.display = 'none';
+                if (bookingLink) bookingLink.style.display = 'none';
+                if (loginLink) loginLink.style.display = 'inline-block';
+                if (registerLink) registerLink.style.display = 'inline-block';
+                if (logoutLink) logoutLink.style.display = 'none';
+                if (adminLink) adminLink.style.display = 'none';
             }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUIForUser();
+            loadPitches();
+            
+            const searchInput = document.getElementById('searchInput');
+            const priceFilter = document.getElementById('priceFilter');
+            if (searchInput) searchInput.addEventListener('keyup', filterPitches);
+            if (priceFilter) priceFilter.addEventListener('change', filterPitches);
         });
     </script>
 </body>

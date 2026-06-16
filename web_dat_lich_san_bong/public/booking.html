@@ -16,7 +16,9 @@
             <a href="index.html"><i class="fas fa-home"></i> Trang chủ</a>
             <a href="pitches.html"><i class="fas fa-list"></i> Sân bóng</a>
             <a href="my-bookings.html"><i class="fas fa-calendar-alt"></i> Lịch của tôi</a>
-            <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Đăng xuất (<span class="user-name"></span>)</a>
+            <a href="#" id="logout-link" onclick="logoutNow(); return false;">
+                <i class="fas fa-sign-out-alt"></i> Đăng xuất (<span class="user-name"></span>)
+            </a>
         </div>
     </nav>
 
@@ -70,5 +72,18 @@
     <script src="assets/js/utils.js"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/booking.js"></script>
+    <script>
+        function logoutNow() {
+            sessionStorage.removeItem('user');
+            window.location.href = '/web_dat_lich_san_bong/public/login.html';
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = getCurrentUser();
+            if (user) {
+                document.querySelector('.user-name').textContent = user.name;
+            }
+        });
+    </script>
 </body>
 </html>
